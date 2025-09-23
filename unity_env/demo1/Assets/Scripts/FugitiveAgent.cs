@@ -3,6 +3,7 @@ using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
 
+
 public class FugitiveAgent : Agent
 {
     [Header("Car Settings")]
@@ -17,6 +18,10 @@ public class FugitiveAgent : Agent
 
     [Header("Police - Buscar por nombre")]
     public string policeCarName = "PoliceCar";
+
+    
+    [Header("Game Settings")]
+    public bool isGameMode = true;
 
     private Rigidbody rb;
     private Vector3 startPos;
@@ -104,22 +109,21 @@ public class FugitiveAgent : Agent
 
     public override void OnActionReceived(ActionBuffers actionBuffers)
     {
-        // OBTENER inputs del ML-Agent
         motorInput = actionBuffers.ContinuousActions[0];
         steerInput = actionBuffers.ContinuousActions[1];
 
-        // Las fuerzas se aplican en FixedUpdate()
-
-        // Rewards
-        AddReward(0.001f);
-
-        if (policeTransform != null)
+        // Rewards SOLO si no es modo juego
+        if (!isGameMode)
         {
-            float dist = Vector3.Distance(transform.position, policeTransform.position);
-            if (dist < 3f)
+            AddReward(0.001f);
+            if (policeTransform != null)
             {
-                AddReward(-1f);
-                EndEpisode();
+                float dist = Vector3.Distance(transform.position, policeTransform.position);
+                if (dist < 3f)
+                {
+                    AddReward(-1f);
+                    EndEpisode();
+                }
             }
         }
     }
@@ -207,5 +211,40 @@ public class FugitiveAgent : Agent
             Gizmos.color = Color.blue;
             Gizmos.DrawLine(transform.position, transform.position + rb.linearVelocity);
         }
+    }
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Police"))
+        {
+            Debug.Log("¡ATRAPADO! Reiniciando juego...");
+            RestartGame();
+        }
+        
+        if (collision.gameObject.CompareTag("Wall"))
+        {
+            Debug.Log("¡Chocaste con una pared!");
+            if (isGameMode) RestartGame();
+        }
+    }
+
+// AÑADIR método para reiniciar el juego:
+    void RestartGame()
+    {
+        transform.position = startPos;
+        transform.rotation = Quaternion.identity;
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+        
+        // Reiniciar también la policía
+        if (policeTransform != null)
+        {
+            PoliceAgent policeAgent = policeTransform.GetComponent<PoliceAgent>();
+            if (policeAgent != null)
+            {
+                policeAgent.RestartPolice(); 
+            }
+        }
+        
+        Debug.Log("=== JUEGO REINICIADO ===");
     }
 }

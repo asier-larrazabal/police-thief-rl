@@ -6,8 +6,8 @@ public class CarCamera : MonoBehaviour
     public Transform target;
 
     [Header("Camera Position")]
-    public float distance = 20f;
-    public float height = 10f;
+    public float distance = 40f;
+    public float height = 20f;
     public float heightDamping = 2f;
     public float rotationDamping = 3f;
 
@@ -15,24 +15,24 @@ public class CarCamera : MonoBehaviour
     {
         if (!target) return;
 
-        // CALCULAR posición deseada detrás del coche
+        // CALCULAR posiciï¿½n deseada detrï¿½s del coche
         float wantedRotationAngle = target.eulerAngles.y;
         float wantedHeight = target.position.y + height;
 
         float currentRotationAngle = transform.eulerAngles.y;
         float currentHeight = transform.position.y;
 
-        // SUAVIZAR rotación y altura
+        // SUAVIZAR rotaciï¿½n y altura
         currentRotationAngle = Mathf.LerpAngle(currentRotationAngle, wantedRotationAngle, rotationDamping * Time.deltaTime);
         currentHeight = Mathf.Lerp(currentHeight, wantedHeight, heightDamping * Time.deltaTime);
 
-        // CONVERTIR ángulo a posición
+        // CONVERTIR ï¿½ngulo a posiciï¿½n
         Quaternion currentRotation = Quaternion.Euler(0, currentRotationAngle, 0);
         Vector3 position = target.position;
         position -= currentRotation * Vector3.forward * distance;
         position.y = currentHeight;
 
-        // APLICAR posición
+        // APLICAR posiciï¿½n
         transform.position = position;
         transform.LookAt(target.position + Vector3.up);
     }
