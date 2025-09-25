@@ -1,232 +1,119 @@
 using UnityEngine;
-using Unity.MLAgents;
-using Unity.MLAgents.Actuators;
-using Unity.MLAgents.Sensors;
+using VehicleBehaviour;
 
-public class PoliceAgent : Agent
+public class PoliceAgent : MonoBehaviour
 {
-    [Header("Car Settings")]
-    public float motorForce = 1000f; // Más potente que el fugitivo
-    public float maxSteerAngle = 45f;
-
-    [Header("Car Physics")]
-    public float downForce = 150f;
-    public float driftFactor = 0.98f; // Mejor agarre
-
     [Header("Target")]
-    public Transform fugitiveTarget; // El coche a perseguir
-    public string fugitiveCarName = "FugitiveCar";
-
-    private Rigidbody rb;
-    private Vector3 startPos;
-
-    // Variables de control
-    private float motorInput;
-    private float steerInput;
-
+    public Transform fugitiveTarget; // El runner a perseguir
+    public string fugitiveCarName = "Car01";
+    
+    [Header("AI Settings")]
+    public float detectionRange = 50f; // Distancia máxima de persecución
+    public float updateFrequency = 0.1f; // Frecuencia de actualización de IA
+    
+    private WheelVehicle wheelVehicle; // Referencia al script de físicas
+    private float lastUpdateTime;
+    
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
-        if (rb == null) rb = gameObject.AddComponent<Rigidbody>();
-
-        // CONFIGURACIÓN PARA POLICÍA (más ágil)
-        rb.mass = 350f; // Más ligero = más rápido
-        rb.linearDamping = 0.05f;
-        rb.angularDamping = 0.3f;
-        rb.centerOfMass = new Vector3(0, -0.6f, 0);
-
-        startPos = transform.position;
-
-        // BUSCAR fugitivo automáticamente
+        // Obtener el componente WheelVehicle (las físicas del asset)
+        wheelVehicle = GetComponent<WheelVehicle>();
+        
+        if (wheelVehicle == null)
+        {
+            Debug.LogError("PoliceAI: No se encontró WheelVehicle en este objeto!");
+            return;
+        }
+        
+        // Desactivar el control del jugador para usar IA
+        wheelVehicle.IsPlayer = false;
+        
+        // Buscar automáticamente el fugitivo si no está asignado
         if (fugitiveTarget == null)
         {
             GameObject fugitiveObject = GameObject.Find(fugitiveCarName);
             if (fugitiveObject != null)
             {
                 fugitiveTarget = fugitiveObject.transform;
-                Debug.Log("Fugitivo encontrado: " + fugitiveCarName);
+                Debug.Log($"Fugitivo encontrado: {fugitiveCarName}");
             }
             else
             {
-                Debug.LogError("No se encontró un GameObject llamado: " + fugitiveCarName);
+                Debug.LogWarning($"No se encontró el fugitivo con nombre: {fugitiveCarName}");
             }
         }
-    }
-
-    void FixedUpdate()
-    {
-        // APLICAR DOWNFORCE
-        rb.AddForce(-transform.up * downForce * rb.linearVelocity.magnitude);
-
-        // APLICAR FÍSICA
-        ApplyMotor();
-        ApplySteering();
-        ApplyTireFriction();
-    }
-
-    public override void OnEpisodeBegin()
-    {
-        transform.position = startPos;
-        transform.rotation = Quaternion.identity;
-        rb.linearVelocity = Vector3.zero;
-        rb.angularVelocity = Vector3.zero;
-    }
-
-    public override void CollectObservations(VectorSensor sensor)
-    {
-        // Police position and velocity (6 values)
-        sensor.AddObservation(transform.localPosition);
-        sensor.AddObservation(rb.linearVelocity);
-
-        // Police forward direction (3 values)
-        sensor.AddObservation(transform.forward);
-
-        // Target information (7 values)
-        if (fugitiveTarget != null)
-        {
-            Vector3 toTarget = fugitiveTarget.position - transform.position;
-            sensor.AddObservation(toTarget.normalized);
-            sensor.AddObservation(toTarget.magnitude / 50f);
-
-            // Target velocity para predicción
-            Rigidbody targetRb = fugitiveTarget.GetComponent<Rigidbody>();
-            if (targetRb != null)
-            {
-                sensor.AddObservation(targetRb.linearVelocity);
-            }
-            else
-            {
-                sensor.AddObservation(Vector3.zero);
-            }
-        }
-        else
-        {
-            sensor.AddObservation(Vector3.zero);
-            sensor.AddObservation(0f);
-            sensor.AddObservation(Vector3.zero);
-        }
-    }
-
-    public override void OnActionReceived(ActionBuffers actionBuffers)
-    {
-        motorInput = actionBuffers.ContinuousActions[0];
-        steerInput = actionBuffers.ContinuousActions[1];
-
-        // REWARDS para la policía
-        AddReward(-0.001f); // Penalización por tiempo (urgencia)
-
-        if (fugitiveTarget != null)
-        {
-            float distance = Vector3.Distance(transform.position, fugitiveTarget.position);
-
-            // REWARD por acercarse
-            if (distance < 5f)
-            {
-                AddReward(0.01f);
-                if (distance < 3f)
-                {
-                    AddReward(0.1f); // Gran reward por estar muy cerca
-                    if (distance < 1.5f)
-                    {
-                        AddReward(1f); // ¡ATRAPADO!
-                        EndEpisode();
-                    }
-                }
-            }
-
-            // PENALIZACIÓN por alejarse mucho
-            if (distance > 20f)
-            {
-                AddReward(-0.01f);
-            }
-        }
-    }
-
-    void ApplyMotor()
-    {
-        Vector3 forwardForce = transform.forward * motorInput * motorForce * 2.2f;
-        rb.AddForce(forwardForce);
-    }
-
-    void ApplySteering()
-    {
-        float currentSpeed = rb.linearVelocity.magnitude;
-
-        if (Mathf.Abs(steerInput) > 0.05f)
-        {
-            bool isMoving = currentSpeed > 0.3f || Mathf.Abs(motorInput) > 0.1f;
-
-            if (isMoving)
-            {
-                float steerAngle = steerInput * maxSteerAngle;
-                float speedFactor = Mathf.Clamp01(currentSpeed / 15f);
-                float realSteerAngle = steerAngle * (1f - speedFactor * 0.2f);
-
-                // STEERING POTENTE para persecución
-                rb.AddTorque(transform.up * realSteerAngle * 45f);
-                transform.Rotate(0, steerInput * 70f * Time.fixedDeltaTime, 0);
-            }
-            else
-            {
-                transform.Rotate(0, steerInput * 35f * Time.fixedDeltaTime, 0);
-            }
-        }
-    }
-
-    void ApplyTireFriction()
-    {
-        Vector3 forwardVelocity = Vector3.Project(rb.linearVelocity, transform.forward);
-        Vector3 sidewaysVelocity = rb.linearVelocity - forwardVelocity;
-
-        // MEJOR agarre para persecución
-        rb.AddForce(-sidewaysVelocity * driftFactor * 25f);
-        rb.AddForce(-forwardVelocity * 0.015f);
-
-        float speed = rb.linearVelocity.magnitude;
-        Vector3 airResistance = -rb.linearVelocity.normalized * speed * speed * 0.003f;
-        rb.AddForce(airResistance);
-    }
-
-    public override void Heuristic(in ActionBuffers actionsOut)
-    {
-        // IA SIMPLE para testing (perseguir directamente)
-        var actions = actionsOut.ContinuousActions;
-
-        if (fugitiveTarget != null)
-        {
-            Vector3 toTarget = fugitiveTarget.position - transform.position;
-            float angle = Vector3.SignedAngle(transform.forward, toTarget, Vector3.up);
-
-            actions[0] = 1f; // Siempre acelerar
-            actions[1] = Mathf.Clamp(angle / 45f, -1f, 1f); // Girar hacia el target
-        }
-        else
-        {
-            actions[0] = 0f;
-            actions[1] = 0f;
-        }
-    }
-void OnCollisionEnter(Collision collision)
-{
-    if (collision.gameObject.CompareTag("Wall"))
-    {
-        AddReward(-0.3f);
     }
     
-    // DETECTAR colisión con fugitivo
-    if (collision.gameObject.CompareTag("Player") || collision.gameObject.name.Contains("Fugitive"))
+    void Update()
     {
-        Debug.Log("¡POLICÍA ATRAPA AL FUGITIVO!");
-        // Aquí puedes añadir lógica adicional si quieres
+        // Actualizar la IA a intervalos regulares para mejor rendimiento
+        if (Time.time - lastUpdateTime >= updateFrequency)
+        {
+            UpdateAI();
+            lastUpdateTime = Time.time;
+        }
+    }
+    
+        void UpdateAI()
+    {
+        if (wheelVehicle == null || fugitiveTarget == null) return;
+        
+        // Calcular distancia al fugitivo
+        float distanceToTarget = Vector3.Distance(transform.position, fugitiveTarget.position);
+        
+        if (distanceToTarget > detectionRange)
+        {
+            wheelVehicle.Throttle = 0f;
+            wheelVehicle.Steering = 0f;
+            return;
+        }
+        
+        // Calcular dirección hacia el fugitivo
+        Vector3 directionToTarget = (fugitiveTarget.position - transform.position).normalized;
+        
+        // Calcular ángulo de giro necesario
+        float angleToTarget = Vector3.SignedAngle(transform.forward, directionToTarget, Vector3.up);
+        
+        // Controlar aceleración
+        wheelVehicle.Throttle = 1f;
+        
+        // Controlar dirección - MÁS AGRESIVO
+        float steeringInput = angleToTarget / 30f; // Cambiado de 45f a 30f para giros más rápidos
+        wheelVehicle.Steering = Mathf.Clamp(steeringInput, -1f, 1f);
+        
+        // Si el ángulo es muy grande, girar más agresivamente
+        if (Mathf.Abs(angleToTarget) > 90f)
+        {
+            wheelVehicle.Steering = angleToTarget > 0 ? 1f : -1f; // Giro a fondo
+            wheelVehicle.Throttle = 0.5f; // Reducir velocidad para girar mejor
+        }
+        
+        // Usar boost si está lejos
+        if (distanceToTarget > 20f)
+        {
+            wheelVehicle.boosting = true;
+        }
+        else
+        {
+            wheelVehicle.boosting = false;
+        }
+    }
+    
+    // Método para cambiar el objetivo de persecución
+    public void SetTarget(Transform newTarget)
+    {
+        fugitiveTarget = newTarget;
+    }
+    
+    // Método para activar/desactivar la IA
+    public void SetAIActive(bool active)
+    {
+        enabled = active;
+        if (!active)
+        {
+            wheelVehicle.Throttle = 0f;
+            wheelVehicle.Steering = 0f;
+            wheelVehicle.boosting = false;
+        }
     }
 }
-    public void RestartPolice()
-{
-    transform.position = startPos;
-    transform.rotation = Quaternion.identity;
-    rb.linearVelocity = Vector3.zero;
-    rb.angularVelocity = Vector3.zero;
-    Debug.Log("Policía reiniciada");
-}
-}
-
