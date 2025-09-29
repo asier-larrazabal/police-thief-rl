@@ -3,10 +3,10 @@ using UnityEngine;
 public class CarCamera : MonoBehaviour
 {
     [Header("Target")]
-    public Transform target;
+    public Transform target;    
 
     [Header("Camera Position")]
-    public float distance = 40f;
+    public float distance = 20f;
     public float height = 20f;
     public float heightDamping = 2f;
     public float rotationDamping = 3f;
