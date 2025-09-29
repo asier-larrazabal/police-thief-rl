@@ -24,12 +24,18 @@ public class CarAgent : Agent
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        // Añadimos la velocidad actual del coche como observación normalizada
-        float normalizedSpeed = controller.Speed / 100f; // ajustar según tu máximo esperado
-        sensor.AddObservation(normalizedSpeed);
-
-        // Podrías añadir raycasts o más observaciones aquí para detectar obstáculos
+        if (controller != null)
+        {
+            float normalizedSpeed = controller.Speed / 100f;
+            sensor.AddObservation(normalizedSpeed);
+        }
+        else
+        {
+            sensor.AddObservation(0f);
+            Debug.LogWarning("Controller is not assigned in CarAgent.");
+        }
     }
+
 
     public override void OnActionReceived(ActionBuffers actions)
     {

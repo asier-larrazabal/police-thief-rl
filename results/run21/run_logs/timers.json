@@ -1,0 +1,42 @@
+{
+    "name": "root",
+    "metadata": {
+        "timer_format_version": "0.1.0",
+        "start_time_seconds": "1759155936",
+        "python_version": "3.10.11 (tags/v3.10.11:7d4cc5a, Apr  5 2023, 00:38:17) [MSC v.1929 64 bit (AMD64)]",
+        "command_line_arguments": "C:\\Users\\asier.aurre\\Documents\\Reinforced Learning\\police-thief-rl\\.venv\\Scripts\\mlagents-learn training\\configs\\car_agent.yaml --run-id=run21 --train",
+        "mlagents_version": "1.1.0",
+        "mlagents_envs_version": "1.1.0",
+        "communication_protocol_version": "1.5.0",
+        "pytorch_version": "2.8.0+cpu",
+        "numpy_version": "1.23.5",
+        "end_time_seconds": "1759155963"
+    },
+    "total": 26.970691700000316,
+    "count": 1,
+    "self": 0.008284999999887077,
+    "children": {
+        "run_training.setup": {
+            "total": 0.0682353999982297,
+            "count": 1,
+            "self": 0.0682353999982297
+        },
+        "TrainerController.start_learning": {
+            "total": 26.8941713000022,
+            "count": 1,
+            "self": 0.0001272000044991728,
+            "children": {
+                "TrainerController._reset_env": {
+                    "total": 26.894024099998205,
+                    "count": 1,
+                    "self": 26.894024099998205
+                },
+                "TrainerController._save_models": {
+                    "total": 1.9999999494757503e-05,
+                    "count": 1,
+                    "self": 1.9999999494757503e-05
+                }
+            }
+        }
+    }
+}
