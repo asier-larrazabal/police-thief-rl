@@ -1,0 +1,73 @@
+{
+    "name": "root",
+    "metadata": {
+        "timer_format_version": "0.1.0",
+        "start_time_seconds": "1759767487",
+        "python_version": "3.10.11 (tags/v3.10.11:7d4cc5a, Apr  5 2023, 00:38:17) [MSC v.1929 64 bit (AMD64)]",
+        "command_line_arguments": "C:\\Users\\asier.larrazabal\\Desktop\\police-thief-rl\\.venv\\Scripts\\mlagents-learn training\\configs\\car_agent.yaml --run-id=run66 --train",
+        "mlagents_version": "1.1.0",
+        "mlagents_envs_version": "1.1.0",
+        "communication_protocol_version": "1.5.0",
+        "pytorch_version": "2.8.0+cpu",
+        "numpy_version": "1.23.5",
+        "end_time_seconds": "1759767627"
+    },
+    "total": 139.5992542999993,
+    "count": 1,
+    "self": 10.005087399998956,
+    "children": {
+        "run_training.setup": {
+            "total": 0.09483360000012908,
+            "count": 1,
+            "self": 0.09483360000012908
+        },
+        "TrainerController.start_learning": {
+            "total": 129.49933330000022,
+            "count": 1,
+            "self": 0.0002829999993991805,
+            "children": {
+                "TrainerController._reset_env": {
+                    "total": 16.609494300000733,
+                    "count": 1,
+                    "self": 16.609494300000733
+                },
+                "TrainerController.advance": {
+                    "total": 112.80596530000003,
+                    "count": 1,
+                    "self": 1.1699999959091656e-05,
+                    "children": {
+                        "env_step": {
+                            "total": 112.80595360000007,
+                            "count": 1,
+                            "self": 112.80592770000112,
+                            "children": {
+                                "SubprocessEnvManager._take_step": {
+                                    "total": 2.5899998945533298e-05,
+                                    "count": 3,
+                                    "self": 2.5899998945533298e-05
+                                }
+                            }
+                        }
+                    }
+                },
+                "trainer_threads": {
+                    "total": 6.999998731771484e-07,
+                    "count": 1,
+                    "self": 6.999998731771484e-07
+                },
+                "TrainerController._save_models": {
+                    "total": 0.08359000000018568,
+                    "count": 1,
+                    "self": 0.0027774000009230804,
+                    "children": {
+                        "RLTrainer._checkpoint": {
+                            "total": 0.0808125999992626,
+                            "count": 1,
+                            "self": 0.0808125999992626
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

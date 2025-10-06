@@ -1,0 +1,73 @@
+{
+    "name": "root",
+    "metadata": {
+        "timer_format_version": "0.1.0",
+        "start_time_seconds": "1759767745",
+        "python_version": "3.10.11 (tags/v3.10.11:7d4cc5a, Apr  5 2023, 00:38:17) [MSC v.1929 64 bit (AMD64)]",
+        "command_line_arguments": "C:\\Users\\asier.larrazabal\\Desktop\\police-thief-rl\\.venv\\Scripts\\mlagents-learn training\\configs\\car_agent.yaml --run-id=run67 --train",
+        "mlagents_version": "1.1.0",
+        "mlagents_envs_version": "1.1.0",
+        "communication_protocol_version": "1.5.0",
+        "pytorch_version": "2.8.0+cpu",
+        "numpy_version": "1.23.5",
+        "end_time_seconds": "1759767861"
+    },
+    "total": 116.30637229999957,
+    "count": 1,
+    "self": 0.005301999999574036,
+    "children": {
+        "run_training.setup": {
+            "total": 0.09975409999969997,
+            "count": 1,
+            "self": 0.09975409999969997
+        },
+        "TrainerController.start_learning": {
+            "total": 116.20131620000029,
+            "count": 1,
+            "self": 0.0002790000035020057,
+            "children": {
+                "TrainerController._reset_env": {
+                    "total": 14.880708799999411,
+                    "count": 1,
+                    "self": 14.880708799999411
+                },
+                "TrainerController.advance": {
+                    "total": 101.25055319999956,
+                    "count": 1,
+                    "self": 1.340000017080456e-05,
+                    "children": {
+                        "env_step": {
+                            "total": 101.25053979999939,
+                            "count": 1,
+                            "self": 101.25053509999816,
+                            "children": {
+                                "SubprocessEnvManager._take_step": {
+                                    "total": 4.700001227320172e-06,
+                                    "count": 1,
+                                    "self": 4.700001227320172e-06
+                                }
+                            }
+                        }
+                    }
+                },
+                "trainer_threads": {
+                    "total": 7.999988156370819e-07,
+                    "count": 1,
+                    "self": 7.999988156370819e-07
+                },
+                "TrainerController._save_models": {
+                    "total": 0.06977439999900525,
+                    "count": 1,
+                    "self": 0.002830299999914132,
+                    "children": {
+                        "RLTrainer._checkpoint": {
+                            "total": 0.06694409999909112,
+                            "count": 1,
+                            "self": 0.06694409999909112
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
