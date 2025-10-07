@@ -1,0 +1,51 @@
+{
+    "PoliceAgent": {
+        "checkpoints": [
+            {
+                "steps": 53799,
+                "file_path": "results\\run109\\PoliceAgent\\PoliceAgent-53799.onnx",
+                "reward": -56158.821184910834,
+                "creation_time": 1759848925.032875,
+                "auxillary_file_paths": [
+                    "results\\run109\\PoliceAgent\\PoliceAgent-53799.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 53799,
+            "file_path": "results\\run109\\PoliceAgent.onnx",
+            "reward": -56158.821184910834,
+            "creation_time": 1759848925.032875,
+            "auxillary_file_paths": [
+                "results\\run109\\PoliceAgent\\PoliceAgent-53799.pt"
+            ]
+        }
+    },
+    "RunnerAgent": {
+        "checkpoints": [
+            {
+                "steps": 53799,
+                "file_path": "results\\run109\\RunnerAgent\\RunnerAgent-53799.onnx",
+                "reward": 61343.46969664097,
+                "creation_time": 1759848925.079165,
+                "auxillary_file_paths": [
+                    "results\\run109\\RunnerAgent\\RunnerAgent-53799.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 53799,
+            "file_path": "results\\run109\\RunnerAgent.onnx",
+            "reward": 61343.46969664097,
+            "creation_time": 1759848925.079165,
+            "auxillary_file_paths": [
+                "results\\run109\\RunnerAgent\\RunnerAgent-53799.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.1.0",
+        "torch_version": "2.8.0+cpu"
+    }
+}

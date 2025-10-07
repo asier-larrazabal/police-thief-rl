@@ -13,6 +13,8 @@ public class PoliceAgent : Agent
     private Vector3 initialPosition;
     private Quaternion initialRotation;
 
+    private float collisionCheckDistance = 1.5f;
+
     public override void Initialize()
     {
         wheelVehicle = GetComponent<WheelVehicle>();
@@ -30,7 +32,7 @@ public class PoliceAgent : Agent
 
         if (rb != null)
         {
-            rb.velocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
 
@@ -45,7 +47,7 @@ public class PoliceAgent : Agent
     {
         sensor.AddObservation(transform.localPosition);
         sensor.AddObservation(transform.localRotation);
-        sensor.AddObservation(rb.velocity);
+        sensor.AddObservation(rb.linearVelocity);
         sensor.AddObservation(rb.angularVelocity);
         sensor.AddObservation(runnerAgent.transform.localPosition - transform.localPosition);
         sensor.AddObservation(runnerAgent.GetVelocity());
@@ -68,17 +70,29 @@ public class PoliceAgent : Agent
         float dist = Vector3.Distance(transform.position, runnerAgent.transform.position);
         AddReward(-dist * 0.002f);
 
+        CheckCollision();
+
         if (dist < 4f)
         {
             AddReward(1.0f);
             runnerAgent.AddReward(-1.0f);
-
             runnerAgent.EndEpisode();
             EndEpisode();
         }
         else
         {
             AddReward(0.01f);
+        }
+    }
+
+    void CheckCollision()
+    {
+        Vector3 origin = transform.position + Vector3.up * 0.5f;
+        if (Physics.Raycast(origin, transform.forward, collisionCheckDistance))
+        {
+            AddReward(-1.0f);
+            runnerAgent.EndEpisode();
+            EndEpisode();
         }
     }
 
@@ -89,5 +103,5 @@ public class PoliceAgent : Agent
         ca[1] = Input.GetAxis("Vertical");
     }
 
-    public Vector3 GetVelocity() => rb != null ? rb.velocity : Vector3.zero;
+    public Vector3 GetVelocity() => rb != null ? rb.linearVelocity : Vector3.zero;
 }

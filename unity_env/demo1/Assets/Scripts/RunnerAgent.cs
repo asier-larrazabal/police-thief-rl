@@ -13,6 +13,8 @@ public class RunnerAgent : Agent
     private Vector3 initialPosition;
     private Quaternion initialRotation;
 
+    private float collisionCheckDistance = 1.5f;
+
     public override void Initialize()
     {
         wheelVehicle = GetComponent<WheelVehicle>();
@@ -62,17 +64,29 @@ public class RunnerAgent : Agent
         float dist = Vector3.Distance(transform.position, policeAgent.transform.position);
         AddReward(dist * 0.002f);
 
+        CheckCollision();
+
         if (dist < 4f)
         {
             AddReward(-1.0f);
             policeAgent.AddReward(1.0f);
-
             policeAgent.EndEpisode();
             EndEpisode();
         }
         else
         {
             AddReward(0.01f);
+        }
+    }
+
+    void CheckCollision()
+    {
+        Vector3 origin = transform.position + Vector3.up * 0.5f;
+        if (Physics.Raycast(origin, transform.forward, collisionCheckDistance))
+        {
+            AddReward(-1.0f);
+            policeAgent.EndEpisode();
+            EndEpisode();
         }
     }
 
