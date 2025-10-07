@@ -6,8 +6,8 @@ using VehicleBehaviour;
 
 public class PoliceAgent : Agent
 {
-    [Header("Referencias")]
-    public RunnerAgent runnerAgent; // Asigna en el inspector
+    [Header("Referencia al fugitivo")]
+    public RunnerAgent runnerAgent;
     private WheelVehicle wheelVehicle;
     private Rigidbody rb;
     private Vector3 initialPosition;
@@ -19,14 +19,21 @@ public class PoliceAgent : Agent
         rb = GetComponent<Rigidbody>();
         initialPosition = transform.localPosition;
         initialRotation = transform.localRotation;
-        if (wheelVehicle != null) wheelVehicle.IsPlayer = false;
+        if (wheelVehicle != null)
+            wheelVehicle.IsPlayer = false;
     }
 
     public override void OnEpisodeBegin()
     {
-        transform.localPosition = initialPosition + new Vector3(Random.Range(-2f, 2f), 0, Random.Range(-2f, 2f));
+        transform.localPosition = initialPosition + new Vector3(Random.Range(-3f,3f), 0, Random.Range(-3f,3f));
         transform.localRotation = initialRotation;
-        rb.linearVelocity = rb.angularVelocity = Vector3.zero;
+
+        if (rb != null)
+        {
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
         if (wheelVehicle != null)
         {
             wheelVehicle.Steering = 0f;
@@ -38,9 +45,9 @@ public class PoliceAgent : Agent
     {
         sensor.AddObservation(transform.localPosition);
         sensor.AddObservation(transform.localRotation);
-        sensor.AddObservation(rb.linearVelocity);
+        sensor.AddObservation(rb.velocity);
         sensor.AddObservation(rb.angularVelocity);
-        sensor.AddObservation(runnerAgent.transform.localPosition - transform.localPosition); // Posición relativa del fugitivo
+        sensor.AddObservation(runnerAgent.transform.localPosition - transform.localPosition);
         sensor.AddObservation(runnerAgent.GetVelocity());
 
         float[] rayAngles = { 0f, -30f, 30f, -60f, 60f };
@@ -59,12 +66,13 @@ public class PoliceAgent : Agent
         wheelVehicle.Throttle = throttle;
 
         float dist = Vector3.Distance(transform.position, runnerAgent.transform.position);
-        AddReward(-dist * 0.002f); // Acercarse al runner es positivo
+        AddReward(-dist * 0.002f);
 
         if (dist < 4f)
         {
-            AddReward(1.0f); // El policía gana
-            runnerAgent.AddReward(-1.0f); // El runner pierde
+            AddReward(1.0f);
+            runnerAgent.AddReward(-1.0f);
+
             runnerAgent.EndEpisode();
             EndEpisode();
         }
@@ -81,9 +89,5 @@ public class PoliceAgent : Agent
         ca[1] = Input.GetAxis("Vertical");
     }
 
-    // Permitir que RunnerAgent acceda a la velocidad para observaciones
-    public Vector3 GetVelocity()
-    {
-        return rb != null ? rb.linearVelocity : Vector3.zero;
-    }
+    public Vector3 GetVelocity() => rb != null ? rb.velocity : Vector3.zero;
 }
