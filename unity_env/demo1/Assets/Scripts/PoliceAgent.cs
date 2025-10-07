@@ -1,119 +1,89 @@
 using UnityEngine;
+using Unity.MLAgents;
+using Unity.MLAgents.Sensors;
+using Unity.MLAgents.Actuators;
 using VehicleBehaviour;
 
-public class PoliceAgent : MonoBehaviour
+public class PoliceAgent : Agent
 {
-    [Header("Target")]
-    public Transform fugitiveTarget; // El runner a perseguir
-    public string fugitiveCarName = "Car01";
-    
-    [Header("AI Settings")]
-    public float detectionRange = 50f; // Distancia máxima de persecución
-    public float updateFrequency = 0.1f; // Frecuencia de actualización de IA
-    
-    private WheelVehicle wheelVehicle; // Referencia al script de físicas
-    private float lastUpdateTime;
-    
-    void Start()
+    [Header("Referencias")]
+    public RunnerAgent runnerAgent; // Asigna en el inspector
+    private WheelVehicle wheelVehicle;
+    private Rigidbody rb;
+    private Vector3 initialPosition;
+    private Quaternion initialRotation;
+
+    public override void Initialize()
     {
-        // Obtener el componente WheelVehicle (las físicas del asset)
         wheelVehicle = GetComponent<WheelVehicle>();
-        
-        if (wheelVehicle == null)
-        {
-            Debug.LogError("PoliceAI: No se encontró WheelVehicle en este objeto!");
-            return;
-        }
-        
-        // Desactivar el control del jugador para usar IA
-        wheelVehicle.IsPlayer = false;
-        
-        // Buscar automáticamente el fugitivo si no está asignado
-        if (fugitiveTarget == null)
-        {
-            GameObject fugitiveObject = GameObject.Find(fugitiveCarName);
-            if (fugitiveObject != null)
-            {
-                fugitiveTarget = fugitiveObject.transform;
-                Debug.Log($"Fugitivo encontrado: {fugitiveCarName}");
-            }
-            else
-            {
-                Debug.LogWarning($"No se encontró el fugitivo con nombre: {fugitiveCarName}");
-            }
-        }
+        rb = GetComponent<Rigidbody>();
+        initialPosition = transform.localPosition;
+        initialRotation = transform.localRotation;
+        if (wheelVehicle != null) wheelVehicle.IsPlayer = false;
     }
-    
-    void Update()
+
+    public override void OnEpisodeBegin()
     {
-        // Actualizar la IA a intervalos regulares para mejor rendimiento
-        if (Time.time - lastUpdateTime >= updateFrequency)
+        transform.localPosition = initialPosition + new Vector3(Random.Range(-2f, 2f), 0, Random.Range(-2f, 2f));
+        transform.localRotation = initialRotation;
+        rb.linearVelocity = rb.angularVelocity = Vector3.zero;
+        if (wheelVehicle != null)
         {
-            UpdateAI();
-            lastUpdateTime = Time.time;
-        }
-    }
-    
-        void UpdateAI()
-    {
-        if (wheelVehicle == null || fugitiveTarget == null) return;
-        
-        // Calcular distancia al fugitivo
-        float distanceToTarget = Vector3.Distance(transform.position, fugitiveTarget.position);
-        
-        if (distanceToTarget > detectionRange)
-        {
-            wheelVehicle.Throttle = 0f;
             wheelVehicle.Steering = 0f;
-            return;
+            wheelVehicle.Throttle = 0f;
         }
-        
-        // Calcular dirección hacia el fugitivo
-        Vector3 directionToTarget = (fugitiveTarget.position - transform.position).normalized;
-        
-        // Calcular ángulo de giro necesario
-        float angleToTarget = Vector3.SignedAngle(transform.forward, directionToTarget, Vector3.up);
-        
-        // Controlar aceleración
-        wheelVehicle.Throttle = 1f;
-        
-        // Controlar dirección - MÁS AGRESIVO
-        float steeringInput = angleToTarget / 30f; // Cambiado de 45f a 30f para giros más rápidos
-        wheelVehicle.Steering = Mathf.Clamp(steeringInput, -1f, 1f);
-        
-        // Si el ángulo es muy grande, girar más agresivamente
-        if (Mathf.Abs(angleToTarget) > 90f)
+    }
+
+    public override void CollectObservations(VectorSensor sensor)
+    {
+        sensor.AddObservation(transform.localPosition);
+        sensor.AddObservation(transform.localRotation);
+        sensor.AddObservation(rb.linearVelocity);
+        sensor.AddObservation(rb.angularVelocity);
+        sensor.AddObservation(runnerAgent.transform.localPosition - transform.localPosition); // Posición relativa del fugitivo
+        sensor.AddObservation(runnerAgent.GetVelocity());
+
+        float[] rayAngles = { 0f, -30f, 30f, -60f, 60f };
+        foreach (float angle in rayAngles)
         {
-            wheelVehicle.Steering = angleToTarget > 0 ? 1f : -1f; // Giro a fondo
-            wheelVehicle.Throttle = 0.5f; // Reducir velocidad para girar mejor
+            Vector3 dir = Quaternion.Euler(0, angle, 0) * transform.forward;
+            sensor.AddObservation(Physics.Raycast(transform.position + Vector3.up, dir, 10f) ? 1f : 0f);
         }
-        
-        // Usar boost si está lejos
-        if (distanceToTarget > 20f)
+    }
+
+    public override void OnActionReceived(ActionBuffers actions)
+    {
+        float steering = Mathf.Clamp(actions.ContinuousActions[0], -1f, 1f);
+        float throttle = Mathf.Clamp(actions.ContinuousActions[1], -1f, 1f);
+        wheelVehicle.Steering = steering;
+        wheelVehicle.Throttle = throttle;
+
+        float dist = Vector3.Distance(transform.position, runnerAgent.transform.position);
+        AddReward(-dist * 0.002f); // Acercarse al runner es positivo
+
+        if (dist < 4f)
         {
-            wheelVehicle.boosting = true;
+            AddReward(1.0f); // El policía gana
+            runnerAgent.AddReward(-1.0f); // El runner pierde
+            runnerAgent.EndEpisode();
+            EndEpisode();
         }
         else
         {
-            wheelVehicle.boosting = false;
+            AddReward(0.01f);
         }
     }
-    
-    // Método para cambiar el objetivo de persecución
-    public void SetTarget(Transform newTarget)
+
+    public override void Heuristic(in ActionBuffers actionsOut)
     {
-        fugitiveTarget = newTarget;
+        var ca = actionsOut.ContinuousActions;
+        ca[0] = Input.GetAxis("Horizontal");
+        ca[1] = Input.GetAxis("Vertical");
     }
-    
-    // Método para activar/desactivar la IA
-    public void SetAIActive(bool active)
+
+    // Permitir que RunnerAgent acceda a la velocidad para observaciones
+    public Vector3 GetVelocity()
     {
-        enabled = active;
-        if (!active)
-        {
-            wheelVehicle.Throttle = 0f;
-            wheelVehicle.Steering = 0f;
-            wheelVehicle.boosting = false;
-        }
+        return rb != null ? rb.linearVelocity : Vector3.zero;
     }
 }
