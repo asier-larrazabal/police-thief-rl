@@ -68,10 +68,11 @@ public class PoliceAgent : Agent
         wheelVehicle.Throttle = throttle;
 
         float dist = Vector3.Distance(transform.position, runnerAgent.transform.position);
-        AddReward(-dist * 0.002f);
 
-        CheckCollision();
+        // Recompensa fuerte por acercarse
+        AddReward(0.05f * (20 - Mathf.Clamp(dist, 0, 20)));
 
+        // Recompensa fuerte si atrapa
         if (dist < 4f)
         {
             AddReward(1.0f);
@@ -79,21 +80,21 @@ public class PoliceAgent : Agent
             runnerAgent.EndEpisode();
             EndEpisode();
         }
-        else
-        {
-            AddReward(0.01f);
-        }
-    }
 
-    void CheckCollision()
-    {
-        Vector3 origin = transform.position + Vector3.up * 0.5f;
-        if (Physics.Raycast(origin, transform.forward, collisionCheckDistance))
+        // Penalización por chocar
+        if (CheckCollision())
         {
             AddReward(-1.0f);
+            runnerAgent.AddReward(1.0f);
             runnerAgent.EndEpisode();
             EndEpisode();
         }
+    }
+
+    bool CheckCollision()
+    {
+        Vector3 origin = transform.position + Vector3.up * 0.5f;
+        return Physics.Raycast(origin, transform.forward, collisionCheckDistance);
     }
 
     public override void Heuristic(in ActionBuffers actionsOut)
