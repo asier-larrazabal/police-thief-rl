@@ -69,76 +69,17 @@ public class FugitiveAgent : Agent
     }
     
     public override void CollectObservations(VectorSensor sensor)
-    {
-        // Posición local del agente (3 valores)
-        sensor.AddObservation(transform.localPosition);
-        
-        // Rotación del agente (4 valores - quaternion)
-        sensor.AddObservation(transform.localRotation);
-        
-        // Velocidad del agente (3 valores)
-        if (rb != null)
-        {
-            sensor.AddObservation(rb.linearVelocity);
-        }
-        else
-        {
-            sensor.AddObservation(Vector3.zero);
-        }
-        
-        // Velocidad angular (3 valores)
-        if (rb != null)
-        {
-            sensor.AddObservation(rb.angularVelocity);
-        }
-        else
-        {
-            sensor.AddObservation(Vector3.zero);
-        }
-        
-        // Posición relativa del policía (3 valores)
-        if (policeTarget != null)
-        {
-            Vector3 relativePosition = transform.InverseTransformPoint(policeTarget.position);
-            sensor.AddObservation(relativePosition);
-        }
-        else
-        {
-            sensor.AddObservation(Vector3.zero);
-        }
-        
-        // Detección de obstáculos con raycast (5 valores)
-        float[] rayAngles = { 0f, -22.5f, 22.5f, -45f, 45f };
-        
-        for (int i = 0; i < 5; i++)
-        {
-            Vector3 rayDirection = Quaternion.Euler(0, rayAngles[i], 0) * transform.forward;
-            RaycastHit hit;
-            
-            if (Physics.Raycast(transform.position + Vector3.up * 0.5f, rayDirection, out hit, raycastDistance, obstacleLayerMask))
-            {
-                sensor.AddObservation(hit.distance / raycastDistance);
-                
-                if (showDebugRays)
-                {
-                    Debug.DrawLine(transform.position + Vector3.up * 0.5f, hit.point, Color.red, 0.1f);
-                }
-            }
-            else
-            {
-                sensor.AddObservation(1.0f);
-                
-                if (showDebugRays)
-                {
-                    Debug.DrawLine(transform.position + Vector3.up * 0.5f, 
-                                 transform.position + Vector3.up * 0.5f + rayDirection * raycastDistance, 
-                                 Color.green, 0.1f);
-                }
-            }
-        }
-        
-        // Total: 3 + 4 + 3 + 3 + 3 + 5 = 21 observaciones
-    }
+{
+    // Observaciones manuales útiles para conducción y huida/persecución:
+    sensor.AddObservation(transform.localPosition); // 3
+    sensor.AddObservation(transform.localRotation); // 4 (quaternion)
+    sensor.AddObservation(rb.linearVelocity);       // 3
+    sensor.AddObservation(rb.angularVelocity);      // 3
+    sensor.AddObservation(policeTarget != null 
+        ? transform.InverseTransformPoint(policeTarget.position) 
+        : Vector3.zero);                           // 3
+    // NO añadas raycasts manuales si usas RayPerceptionSensor 3D
+}
     
     public override void OnActionReceived(ActionBuffers actions)
     {
@@ -151,7 +92,7 @@ public class FugitiveAgent : Agent
         // Aplicar acciones al vehículo
         wheelVehicle.Steering = steering;
         wheelVehicle.Throttle = throttle;
-        
+    
         // Sistema de recompensas
         CalculateRewards();
     }
