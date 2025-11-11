@@ -276,8 +276,9 @@ namespace VehicleBehaviour {
                 boosting = (GetInput(boostInput) > 0.5f);
                 // Turn
                 steering = turnInputCurve.Evaluate(GetInput(turnInput)) * steerAngle;
-                // Dirft
-                drift = GetInput(driftInput) > 0 && rb.linearVelocity.sqrMagnitude > 100;
+                Debug.Log($"Steering input: {steering}, front wheel steer angle: {(turnWheel.Length > 0 ? turnWheel[0].steerAngle : 0)}");
+                // Drift
+                drift = GetInput(driftInput) > 0 && rb.linearVelocity.sqrMagnitude > 100;
                 // Jump
                 jumping = GetInput(jumpInput) != 0;
             }
@@ -285,7 +286,8 @@ namespace VehicleBehaviour {
             // Direction
             foreach (WheelCollider wheel in turnWheel)
             {
-                wheel.steerAngle = Mathf.Lerp(wheel.steerAngle, steering, steerSpeed);
+                wheel.steerAngle = Mathf.Lerp(wheel.steerAngle, steering * steerAngle, steerSpeed);
+                 Debug.Log($"[WheelVehicle] steerAngle aplicado rueda: {wheel.steerAngle}");
             }
 
             foreach (WheelCollider wheel in wheels)

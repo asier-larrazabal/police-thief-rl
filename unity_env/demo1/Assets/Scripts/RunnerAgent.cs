@@ -15,7 +15,7 @@ public class RunnerAgent : Agent
 
     private float collisionCheckDistance = 1.5f;
 
-    public float maxSteeringAngle = 45f; // Puedes ajustar este valor por inspector
+    public float maxSteeringAngle = 45f; // valor usado para giro máximo en grados
 
     public override void Initialize()
     {
@@ -23,13 +23,12 @@ public class RunnerAgent : Agent
         rb = GetComponent<Rigidbody>();
         initialPosition = transform.localPosition;
         initialRotation = transform.localRotation;
-        if (wheelVehicle != null)
-            wheelVehicle.IsPlayer = false;
+        if (wheelVehicle != null) wheelVehicle.IsPlayer = false;
     }
 
     public override void OnEpisodeBegin()
     {
-        transform.localPosition = initialPosition + new Vector3(Random.Range(-3f,3f), 0, Random.Range(-3f,3f));
+        transform.localPosition = initialPosition + new Vector3(Random.Range(-3f, 3f), 0, Random.Range(-3f, 3f));
         transform.localRotation = initialRotation;
         if (rb != null)
             rb.linearVelocity = rb.angularVelocity = Vector3.zero;
@@ -48,44 +47,35 @@ public class RunnerAgent : Agent
         sensor.AddObservation(rb.angularVelocity);
         sensor.AddObservation(policeAgent.transform.localPosition - transform.localPosition);
         sensor.AddObservation(policeAgent.GetVelocity());
-        float[] rayAngles = { 0f, -30f, 30f, -60f, 60f };
-        foreach (float angle in rayAngles)
-        {
-            Vector3 dir = Quaternion.Euler(0, angle, 0) * transform.forward;
-            sensor.AddObservation(Physics.Raycast(transform.position + Vector3.up, dir, 10f) ? 1f : 0f);
-        }
+        // Si usas RayPerceptionSensor 3D elimina raycasts manuales aquí
     }
 
     public override void OnActionReceived(ActionBuffers actions)
     {
-        // Obtener acciones discretas
         int steeringAction = actions.DiscreteActions[0];
         int throttleAction = actions.DiscreteActions[1];
 
-        // Mapear acción de giro a ángulo fijo de ±45 grados
         float steeringAngle = 0f;
-        if (steeringAction == 0) steeringAngle = -maxSteeringAngle; // Izquierda
-        else if (steeringAction == 1) steeringAngle = 0f;           // Recto
-        else if (steeringAction == 2) steeringAngle = maxSteeringAngle; // Derecha
+        if (steeringAction == 0) steeringAngle = -maxSteeringAngle;
+        else if (steeringAction == 1) steeringAngle = 0f;
+        else if (steeringAction == 2) steeringAngle = maxSteeringAngle;
 
-        // Aplicar el ángulo normalizado esperado por WheelVehicle (entre -1 y 1)
-        wheelVehicle.Steering = steeringAngle / maxSteeringAngle;
+        float steeringNormalized = (steeringAngle / maxSteeringAngle) * 1.5f;
+        steeringNormalized = Mathf.Clamp(steeringNormalized, -1f, 1f);
+        wheelVehicle.Steering = steeringNormalized;
 
-        // Mapear acción de aceleración
         float throttle = 0f;
-        if (throttleAction == 0) throttle = -1f; // Marcha atrás
-        else if (throttleAction == 1) throttle = 0f; // Parado
-        else if (throttleAction == 2) throttle = 1f; // Aceleración
+        if (throttleAction == 0) throttle = -1f;
+        else if (throttleAction == 1) throttle = 0f;
+        else if (throttleAction == 2) throttle = 1f;
 
         wheelVehicle.Throttle = throttle;
+        Debug.Log($"[RunnerAgent] Steering input (normalizado): {steeringNormalized}");
+        Debug.Log($"[RunnerAgent] Throttle input: {throttle}");
 
-        // Ejemplo de cálculo de distancia para recompensas
         float dist = Vector3.Distance(transform.position, policeAgent.transform.position);
-
-        // Recompensa que incentiva alejarse
         AddReward(0.05f * Mathf.Clamp(dist, 0, 20));
 
-        // Penalización y fin de episodio si es atrapado
         if (dist < 4f)
         {
             AddReward(-1.0f);
@@ -94,7 +84,6 @@ public class RunnerAgent : Agent
             EndEpisode();
         }
 
-        // Penalización por colisión (ejemplo, ajusta a tus métodos)
         if (CheckCollision())
         {
             AddReward(-1.0f);
@@ -103,6 +92,7 @@ public class RunnerAgent : Agent
             EndEpisode();
         }
     }
+
 
     bool CheckCollision()
     {
@@ -114,17 +104,15 @@ public class RunnerAgent : Agent
     {
         var discreteActionsOut = actionsOut.DiscreteActions;
 
-        // Steering
         float h = Input.GetAxis("Horizontal");
-        if (h < -0.1f) discreteActionsOut[0] = 0; // Left
-        else if (h > 0.1f) discreteActionsOut[0] = 2; // Right
-        else discreteActionsOut[0] = 1; // Center
+        if (h < -0.1f) discreteActionsOut[0] = 0;
+        else if (h > 0.1f) discreteActionsOut[0] = 2;
+        else discreteActionsOut[0] = 1;
 
-        // Throttle
         float v = Input.GetAxis("Vertical");
-        if (v < -0.1f) discreteActionsOut[1] = 0; // Reverse
-        else if (v > 0.1f) discreteActionsOut[1] = 2; // Forward
-        else discreteActionsOut[1] = 1; // Idle
+        if (v < -0.1f) discreteActionsOut[1] = 0;
+        else if (v > 0.1f) discreteActionsOut[1] = 2;
+        else discreteActionsOut[1] = 1;
     }
 
     public Vector3 GetVelocity() => rb != null ? rb.linearVelocity : Vector3.zero;
