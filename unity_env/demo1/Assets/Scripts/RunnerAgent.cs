@@ -13,9 +13,13 @@ public class RunnerAgent : Agent
     private Vector3 initialPosition;
     private Quaternion initialRotation;
 
+    [Header("Objetivo y configuración de entrenamiento")]
+    public Transform targetTransform;     // Posición del objetivo
+    public float goalThreshold = 5f;      // Umbral para considerar objetivo alcanzado
+
     private float collisionCheckDistance = 1.5f;
 
-    public float maxSteeringAngle = 45f; // valor usado para giro máximo en grados
+    public float maxSteeringAngle = 45f;  // Valor máximo de giro en grados
 
     public override void Initialize()
     {
@@ -23,15 +27,22 @@ public class RunnerAgent : Agent
         rb = GetComponent<Rigidbody>();
         initialPosition = transform.localPosition;
         initialRotation = transform.localRotation;
-        if (wheelVehicle != null) wheelVehicle.IsPlayer = false;
+
+        if (wheelVehicle != null)
+            wheelVehicle.IsPlayer = false;
     }
 
     public override void OnEpisodeBegin()
     {
+        // Reinicia la posición del agente cerca de la inicial para diversidad
         transform.localPosition = initialPosition + new Vector3(Random.Range(-3f, 3f), 0, Random.Range(-3f, 3f));
         transform.localRotation = initialRotation;
+
         if (rb != null)
-            rb.linearVelocity = rb.angularVelocity = Vector3.zero;
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
         if (wheelVehicle != null)
         {
             wheelVehicle.Steering = 0f;
@@ -45,9 +56,19 @@ public class RunnerAgent : Agent
         sensor.AddObservation(transform.localRotation);
         sensor.AddObservation(rb.linearVelocity);
         sensor.AddObservation(rb.angularVelocity);
-        sensor.AddObservation(policeAgent.transform.localPosition - transform.localPosition);
-        sensor.AddObservation(policeAgent.GetVelocity());
-        // Si usas RayPerceptionSensor 3D elimina raycasts manuales aquí
+
+        if (targetTransform != null)
+        {
+            Vector3 relativePosition = targetTransform.position - transform.position;
+            sensor.AddObservation(relativePosition.normalized);          // Dirección al objetivo
+            sensor.AddObservation(Vector3.Distance(transform.position, targetTransform.position)); // Distancia al objetivo
+        }
+        else
+        {
+            sensor.AddObservation(Vector3.zero);
+            sensor.AddObservation(0f);
+        }
+        // Si usas RayPerceptionSensor 3D elimina raycasts manuales aquí para evitar duplicados
     }
 
     public override void OnActionReceived(ActionBuffers actions)
@@ -56,43 +77,52 @@ public class RunnerAgent : Agent
         int throttleAction = actions.DiscreteActions[1];
 
         float steeringAngle = 0f;
-        if (steeringAction == 0) steeringAngle = -maxSteeringAngle;
-        else if (steeringAction == 1) steeringAngle = 0f;
-        else if (steeringAction == 2) steeringAngle = maxSteeringAngle;
+        switch (steeringAction)
+        {
+            case 0: steeringAngle = -maxSteeringAngle; break;  // Izquierda
+            case 1: steeringAngle = 0f; break;                 // Recto
+            case 2: steeringAngle = maxSteeringAngle; break;   // Derecha
+        }
 
         float steeringNormalized = (steeringAngle / maxSteeringAngle) * 1.5f;
         steeringNormalized = Mathf.Clamp(steeringNormalized, -1f, 1f);
         wheelVehicle.Steering = steeringNormalized;
 
         float throttle = 0f;
-        if (throttleAction == 0) throttle = -1f;
-        else if (throttleAction == 1) throttle = 0f;
-        else if (throttleAction == 2) throttle = 1f;
-
-        wheelVehicle.Throttle = throttle;
-        Debug.Log($"[RunnerAgent] Steering input (normalizado): {steeringNormalized}");
-        Debug.Log($"[RunnerAgent] Throttle input: {throttle}");
-
-        float dist = Vector3.Distance(transform.position, policeAgent.transform.position);
-        AddReward(0.05f * Mathf.Clamp(dist, 0, 20));
-
-        if (dist < 4f)
+        switch (throttleAction)
         {
-            AddReward(-1.0f);
-            policeAgent.AddReward(1.0f);
-            policeAgent.EndEpisode();
-            EndEpisode();
+            case 0: throttle = -1f; break;    // Reversa
+            case 1: throttle = 0f; break;     // Parado
+            case 2: throttle = 1f; break;     // Adelante
+        }
+        wheelVehicle.Throttle = throttle;
+
+        if (targetTransform != null)
+        {
+            float distanceToGoal = Vector3.Distance(transform.position, targetTransform.position);
+            Debug.Log($"Distancia al objetivo: {distanceToGoal}");
+            // Penalización leve por paso de tiempo para incentivar rapidez
+            AddReward(-0.01f);
+
+            // Recompensa por acercarse al objetivo (inversa de la distancia, suavizado)
+            AddReward(0.01f * (1f / (distanceToGoal + 1f)));
+
+            // Recompensa mayor y termina episodio cuando llegue al objetivo
+            if (distanceToGoal < goalThreshold)
+            {
+                AddReward(10.0f);
+                Debug.Log("Objetivo alcanzado, reiniciando episodio");
+                EndEpisode();
+            }
         }
 
         if (CheckCollision())
         {
+            // Penalización fuerte por colisión y finaliza episodio
             AddReward(-1.0f);
-            policeAgent.AddReward(1.0f);
-            policeAgent.EndEpisode();
             EndEpisode();
         }
     }
-
 
     bool CheckCollision()
     {
@@ -115,5 +145,5 @@ public class RunnerAgent : Agent
         else discreteActionsOut[1] = 1;
     }
 
-    public Vector3 GetVelocity() => rb != null ? rb.linearVelocity : Vector3.zero;
+    public Vector3 GetVelocity() => rb ? rb.linearVelocity : Vector3.zero;
 }
