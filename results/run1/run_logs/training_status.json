@@ -2,22 +2,58 @@
     "RunnerAgent": {
         "checkpoints": [
             {
-                "steps": 100030,
-                "file_path": "results\\run1\\RunnerAgent\\RunnerAgent-100030.onnx",
-                "reward": 88.61415648460388,
-                "creation_time": 1763401167.0026102,
+                "steps": 474060,
+                "file_path": "results\\run1\\RunnerAgent\\RunnerAgent-474060.onnx",
+                "reward": 48.78854308678554,
+                "creation_time": 1763485485.7091274,
                 "auxillary_file_paths": [
-                    "results\\run1\\RunnerAgent\\RunnerAgent-100030.pt"
+                    "results\\run1\\RunnerAgent\\RunnerAgent-474060.pt"
+                ]
+            },
+            {
+                "steps": 474772,
+                "file_path": "results\\run1\\RunnerAgent\\RunnerAgent-474772.onnx",
+                "reward": 116.18207295735677,
+                "creation_time": 1763485844.8998988,
+                "auxillary_file_paths": [
+                    "results\\run1\\RunnerAgent\\RunnerAgent-474772.pt"
+                ]
+            },
+            {
+                "steps": 485066,
+                "file_path": "results\\run1\\RunnerAgent\\RunnerAgent-485066.onnx",
+                "reward": null,
+                "creation_time": 1763486002.0513327,
+                "auxillary_file_paths": [
+                    "results\\run1\\RunnerAgent\\RunnerAgent-485066.pt"
+                ]
+            },
+            {
+                "steps": 499963,
+                "file_path": "results\\run1\\RunnerAgent\\RunnerAgent-499963.onnx",
+                "reward": null,
+                "creation_time": 1763486197.218093,
+                "auxillary_file_paths": [
+                    "results\\run1\\RunnerAgent\\RunnerAgent-499963.pt"
+                ]
+            },
+            {
+                "steps": 558106,
+                "file_path": "results\\run1\\RunnerAgent\\RunnerAgent-558106.onnx",
+                "reward": null,
+                "creation_time": 1763486843.3124218,
+                "auxillary_file_paths": [
+                    "results\\run1\\RunnerAgent\\RunnerAgent-558106.pt"
                 ]
             }
         ],
         "final_checkpoint": {
-            "steps": 100030,
+            "steps": 558106,
             "file_path": "results\\run1\\RunnerAgent.onnx",
-            "reward": 88.61415648460388,
-            "creation_time": 1763401167.0026102,
+            "reward": null,
+            "creation_time": 1763486843.3124218,
             "auxillary_file_paths": [
-                "results\\run1\\RunnerAgent\\RunnerAgent-100030.pt"
+                "results\\run1\\RunnerAgent\\RunnerAgent-558106.pt"
             ]
         }
     },

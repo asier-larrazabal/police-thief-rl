@@ -15,12 +15,13 @@ public class RunnerAgent : Agent
 
     [Header("Objetivo y configuración de entrenamiento")]
     [SerializeField] private Transform targetTransform;     // Posición del objetivo
-    [SerializeField] private float goalThreshold = 5f;      // Umbral para considerar objetivo alcanzado
+    [SerializeField] private float goalThreshold = 5.4f;      // Umbral para considerar objetivo alcanzado
 
     [SerializeField] private float maxSteeringAngle = 45f;  // Valor máximo de giro en grados
 
     // Flags para detectar colisión
     private bool hasCollided = false;
+    private float bestDistanceToGoal;
 
     public override void Initialize()
     {
@@ -34,6 +35,7 @@ public class RunnerAgent : Agent
 
     public override void OnEpisodeBegin()
     {
+        bestDistanceToGoal = float.MaxValue;
         hasCollided = false;
         transform.localPosition = initialPosition + new Vector3(Random.Range(-3f, 3f), 0, Random.Range(-3f, 3f));
         transform.localRotation = initialRotation;
@@ -95,22 +97,29 @@ public class RunnerAgent : Agent
         }
         wheelVehicle.Throttle = throttle;
 
-        AddReward(-0.001f); // Penalización por tiempo
-
-        float maxDistance = 50f;
-        float reward = 0f;
+        //AddReward(-0.2f); // penalización por tiempo
 
         if (targetTransform != null)
         {
             float distanceToGoal = Vector3.Distance(transform.position, targetTransform.position);
-            reward = 0.05f * (1f - (distanceToGoal / maxDistance));
-            AddReward(reward);
-            Debug.Log($"Distancia al objetivo: {distanceToGoal}");
-            Debug.Log($"Recompensa por distancia: {reward}");
+            // Recompensa solo si mejora la mejor distancia alcanzada
+            if (distanceToGoal < bestDistanceToGoal)
+            {
+                bestDistanceToGoal = distanceToGoal;
+
+                float alpha = 0.25f;
+                float beta = 0.05f;
+                float reward = alpha * Mathf.Exp(-beta * distanceToGoal);
+                AddReward(reward);
+
+                Debug.Log($"Distancia mejorada: {distanceToGoal}");
+                Debug.Log($"Recompensa por mejora: {reward}");
+            }
+
 
             if (distanceToGoal < goalThreshold)
             {
-                AddReward(10.0f);
+                AddReward(100.0f);
                 Debug.Log("Objetivo alcanzado, reiniciando episodio");
                 EndEpisode();
             }
