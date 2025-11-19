@@ -1,0 +1,47 @@
+{
+    "RunnerAgent": {
+        "checkpoints": [
+            {
+                "steps": 403029,
+                "file_path": "results\\run2\\RunnerAgent\\RunnerAgent-403029.onnx",
+                "reward": null,
+                "creation_time": 1763568864.8266275,
+                "auxillary_file_paths": [
+                    "results\\run2\\RunnerAgent\\RunnerAgent-403029.pt"
+                ]
+            },
+            {
+                "steps": 499958,
+                "file_path": "results\\run2\\RunnerAgent\\RunnerAgent-499958.onnx",
+                "reward": 6.170434410755451,
+                "creation_time": 1763570111.3802087,
+                "auxillary_file_paths": [
+                    "results\\run2\\RunnerAgent\\RunnerAgent-499958.pt"
+                ]
+            },
+            {
+                "steps": 760096,
+                "file_path": "results\\run2\\RunnerAgent\\RunnerAgent-760096.onnx",
+                "reward": 72.4391476392746,
+                "creation_time": 1763571265.6810572,
+                "auxillary_file_paths": [
+                    "results\\run2\\RunnerAgent\\RunnerAgent-760096.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 760096,
+            "file_path": "results\\run2\\RunnerAgent.onnx",
+            "reward": 72.4391476392746,
+            "creation_time": 1763571265.6810572,
+            "auxillary_file_paths": [
+                "results\\run2\\RunnerAgent\\RunnerAgent-760096.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.1.0",
+        "torch_version": "1.13.1+cpu"
+    }
+}
