@@ -19,7 +19,7 @@ behaviors:
       extrinsic:
         gamma: 0.99
         strength: 1.0
-    max_steps: 3000000      # Suficiente para ver convergencia
+    max_steps: 7000000      # Suficiente para ver convergencia
     time_horizon: 128       # Aumentado para que relacione acciones pasadas con rewards futuros
     summary_freq: 10000
 
@@ -44,7 +44,7 @@ behaviors:
       extrinsic:
         gamma: 0.95
         strength: 1.0
-    max_steps: 2000000
+    max_steps: 7000000
     time_horizon: 32
     summary_freq: 5000
     threaded: false
