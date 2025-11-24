@@ -49,4 +49,4 @@ pip install onnx==1.15.0 protobuf==3.20.3 numpy
 
 mlagents-learn training/configs/car_agent.yaml --run-id=run1
 
----
+mlagents-learn training/configs/car_agent.yaml --run-id=run5 --resume --no-graphics --env '.\build\My project.exe'

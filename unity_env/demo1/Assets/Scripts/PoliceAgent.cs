@@ -6,14 +6,18 @@ using VehicleBehaviour;
 
 public class PoliceAgent : Agent
 {
-    [Header("Referencia al fugitivo")]
-    public RunnerAgent runnerAgent;
+    [Header("Referencia al fugitivo (runner)")]
+    [SerializeField] private RunnerAgent runnerAgent;
     private WheelVehicle wheelVehicle;
     private Rigidbody rb;
     private Vector3 initialPosition;
     private Quaternion initialRotation;
 
-    private float collisionCheckDistance = 1.5f;
+    private float prevDistanceToRunner;
+    private int stuckCounter = 0;
+    private bool hasCollided = false;
+    private int collisionPenaltyCooldown = 0;
+    private const int collisionPenaltyCooldownDuration = 50;
 
     public override void Initialize()
     {
@@ -27,8 +31,9 @@ public class PoliceAgent : Agent
 
     public override void OnEpisodeBegin()
     {
-        transform.localPosition = initialPosition + new Vector3(Random.Range(-3f,3f), 0, Random.Range(-3f,3f));
-        transform.localRotation = initialRotation;
+        transform.localPosition = initialPosition + new Vector3(Random.Range(-3f, 3f), 0, Random.Range(-3f, 3f));
+        float randomAngle = Random.Range(-90f, 90f);
+        transform.localRotation = initialRotation * Quaternion.Euler(0, randomAngle, 0);
 
         if (rb != null)
         {
@@ -41,6 +46,13 @@ public class PoliceAgent : Agent
             wheelVehicle.Steering = 0f;
             wheelVehicle.Throttle = 0f;
         }
+
+        stuckCounter = 0;
+
+        if (runnerAgent != null)
+        {
+            prevDistanceToRunner = Vector3.Distance(transform.position, runnerAgent.transform.position);
+        }
     }
 
     public override void CollectObservations(VectorSensor sensor)
@@ -49,60 +61,138 @@ public class PoliceAgent : Agent
         sensor.AddObservation(transform.localRotation);
         sensor.AddObservation(rb.linearVelocity);
         sensor.AddObservation(rb.angularVelocity);
-        sensor.AddObservation(runnerAgent.transform.localPosition - transform.localPosition);
-        sensor.AddObservation(runnerAgent.GetVelocity());
-
-        float[] rayAngles = { 0f, -30f, 30f, -60f, 60f };
-        foreach (float angle in rayAngles)
+        if (runnerAgent != null)
         {
-            Vector3 dir = Quaternion.Euler(0, angle, 0) * transform.forward;
-            sensor.AddObservation(Physics.Raycast(transform.position + Vector3.up, dir, 10f) ? 1f : 0f);
+            Vector3 relPos = runnerAgent.transform.localPosition - transform.localPosition;
+            sensor.AddObservation(relPos);
+            sensor.AddObservation(runnerAgent.GetVelocity());
+        }
+        else
+        {
+            sensor.AddObservation(Vector3.zero);
+            sensor.AddObservation(Vector3.zero);
         }
     }
 
     public override void OnActionReceived(ActionBuffers actions)
+{
+    int steeringAction = actions.DiscreteActions[0];
+    int throttleAction = actions.DiscreteActions[1];
+
+    float steering = 0f;
+    switch (steeringAction)
     {
-        float steering = Mathf.Clamp(actions.ContinuousActions[0], -1f, 1f);
-        float throttle = Mathf.Clamp(actions.ContinuousActions[1], -1f, 1f);
-        wheelVehicle.Steering = steering;
-        wheelVehicle.Throttle = throttle;
+        case 0: steering = -1f; break;
+        case 1: steering = 0f; break;
+        case 2: steering = 1f; break;
+    }
+    wheelVehicle.Steering = Mathf.Clamp(steering, -1f, 1f);
 
-        float dist = Vector3.Distance(transform.position, runnerAgent.transform.position);
+    float throttle = 0f;
+    switch (throttleAction)
+    {
+        case 0: throttle = -1f; break;
+        case 1: throttle = 0f; break;
+        case 2: throttle = 1f; break;
+    }
+    wheelVehicle.Throttle = Mathf.Clamp(throttle, -1f, 1f);
 
-        // Recompensa fuerte por acercarse
-        AddReward(0.05f * (20 - Mathf.Clamp(dist, 0, 20)));
+    if (runnerAgent == null)
+    {
+        AddReward(-0.001f);
+        return;
+    }
 
-        // Recompensa fuerte si atrapa
-        if (dist < 4f)
+    float dist = Vector3.Distance(transform.position, runnerAgent.transform.position);
+    float delta = prevDistanceToRunner - dist;
+
+    AddReward(delta * 0.1f);
+    prevDistanceToRunner = dist;
+
+    AddReward(-0.001f);
+
+    if (rb.linearVelocity.magnitude < 0.1f)
+    {
+        stuckCounter++;
+        if (stuckCounter > 30)
         {
-            AddReward(1.0f);
-            runnerAgent.AddReward(-1.0f);
-            runnerAgent.EndEpisode();
-            EndEpisode();
+            AddReward(-0.5f);
+            stuckCounter = 0;
         }
+    }
+    else
+    {
+        stuckCounter = 0;
+    }
 
-        // Penalización por chocar
-        if (CheckCollision())
+    if (dist < 6.5f)
+    {
+        AddReward(100f);
+        runnerAgent.AddReward(-100f);
+        EndEpisode();
+        runnerAgent.EndEpisode();
+        Debug.Log("¡Runner capturado!");
+        return;
+    }
+
+    // Aquí chequea colisión sin terminar episodio, solo penaliza
+    if (hasCollided)
+    {
+        if (collisionPenaltyCooldown == 0)
         {
-            AddReward(-1.0f);
-            runnerAgent.AddReward(1.0f);
-            runnerAgent.EndEpisode();
-            EndEpisode();
+            AddReward(-5f);  // penalización por choque
+            collisionPenaltyCooldown = collisionPenaltyCooldownDuration;
+            Debug.Log("Policía se ha chocado - penalización aplicada");
         }
     }
 
-    bool CheckCollision()
+    if (collisionPenaltyCooldown > 0)
     {
-        Vector3 origin = transform.position + Vector3.up * 0.5f;
-        return Physics.Raycast(origin, transform.forward, collisionCheckDistance);
+        collisionPenaltyCooldown--;
+    }
+}
+
+    // Privado método para chequear colisión delante del coche
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Wall") || collision.gameObject.CompareTag("Walls"))
+        {
+            hasCollided = true;
+        }
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Wall") || collision.gameObject.CompareTag("Walls"))
+        {
+            hasCollided = false;
+        }
+    }
+
+
+    public void OnRunnerReachedGoal()
+    {
+        AddReward(-20f);
+        EndEpisode();
+    }
+
+    public void OnRunnerCollided()
+    {
+        AddReward(-10f); // Penalización al policía por que el runner se choque
+        EndEpisode();
     }
 
     public override void Heuristic(in ActionBuffers actionsOut)
     {
-        var ca = actionsOut.ContinuousActions;
-        ca[0] = Input.GetAxis("Horizontal");
-        ca[1] = Input.GetAxis("Vertical");
+        var discreteActionsOut = actionsOut.DiscreteActions;
+        float h = Input.GetAxis("Horizontal");
+        discreteActionsOut[0] = (h < -0.1f) ? 0 : (h > 0.1f) ? 2 : 1;
+        float v = Input.GetAxis("Vertical");
+        discreteActionsOut[1] = (v < -0.1f) ? 0 : (v > 0.1f) ? 2 : 1;
     }
 
-    public Vector3 GetVelocity() => rb != null ? rb.linearVelocity : Vector3.zero;
+    public Vector3 GetVelocity()
+    {
+        return rb != null ? rb.linearVelocity : Vector3.zero;
+    }
 }
