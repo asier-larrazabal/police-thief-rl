@@ -2,58 +2,58 @@
     "PoliceAgent": {
         "checkpoints": [
             {
-                "steps": 555316,
-                "file_path": "results\\run5\\PoliceAgent\\PoliceAgent-555316.onnx",
-                "reward": 102.65671846518914,
-                "creation_time": 1764002785.0048554,
+                "steps": 1292533,
+                "file_path": "results\\run5\\PoliceAgent\\PoliceAgent-1292533.onnx",
+                "reward": 53.77411085406149,
+                "creation_time": 1764081544.6922917,
                 "auxillary_file_paths": [
-                    "results\\run5\\PoliceAgent\\PoliceAgent-555316.pt"
+                    "results\\run5\\PoliceAgent\\PoliceAgent-1292533.pt"
                 ]
             },
             {
-                "steps": 850636,
-                "file_path": "results\\run5\\PoliceAgent\\PoliceAgent-850636.onnx",
-                "reward": 77.80588997522479,
-                "creation_time": 1764004742.4665172,
+                "steps": 1499998,
+                "file_path": "results\\run5\\PoliceAgent\\PoliceAgent-1499998.onnx",
+                "reward": 246.58618855908514,
+                "creation_time": 1764082743.02079,
                 "auxillary_file_paths": [
-                    "results\\run5\\PoliceAgent\\PoliceAgent-850636.pt"
+                    "results\\run5\\PoliceAgent\\PoliceAgent-1499998.pt"
                 ]
             },
             {
-                "steps": 961071,
-                "file_path": "results\\run5\\PoliceAgent\\PoliceAgent-961071.onnx",
-                "reward": 34.82878404203802,
-                "creation_time": 1764005900.0933874,
+                "steps": 1607372,
+                "file_path": "results\\run5\\PoliceAgent\\PoliceAgent-1607372.onnx",
+                "reward": 306.86205739214233,
+                "creation_time": 1764083193.4521484,
                 "auxillary_file_paths": [
-                    "results\\run5\\PoliceAgent\\PoliceAgent-961071.pt"
+                    "results\\run5\\PoliceAgent\\PoliceAgent-1607372.pt"
                 ]
             },
             {
-                "steps": 999993,
-                "file_path": "results\\run5\\PoliceAgent\\PoliceAgent-999993.onnx",
-                "reward": 51.345175257591265,
-                "creation_time": 1764006365.5023782,
+                "steps": 1999969,
+                "file_path": "results\\run5\\PoliceAgent\\PoliceAgent-1999969.onnx",
+                "reward": 11.066737305433039,
+                "creation_time": 1764085985.6983075,
                 "auxillary_file_paths": [
-                    "results\\run5\\PoliceAgent\\PoliceAgent-999993.pt"
+                    "results\\run5\\PoliceAgent\\PoliceAgent-1999969.pt"
                 ]
             },
             {
-                "steps": 1005534,
-                "file_path": "results\\run5\\PoliceAgent\\PoliceAgent-1005534.onnx",
-                "reward": 46.553189935907724,
-                "creation_time": 1764006396.8822484,
+                "steps": 2021693,
+                "file_path": "results\\run5\\PoliceAgent\\PoliceAgent-2021693.onnx",
+                "reward": 21.86284287630216,
+                "creation_time": 1764086077.7066305,
                 "auxillary_file_paths": [
-                    "results\\run5\\PoliceAgent\\PoliceAgent-1005534.pt"
+                    "results\\run5\\PoliceAgent\\PoliceAgent-2021693.pt"
                 ]
             }
         ],
         "final_checkpoint": {
-            "steps": 1005534,
+            "steps": 2021693,
             "file_path": "results\\run5\\PoliceAgent.onnx",
-            "reward": 46.553189935907724,
-            "creation_time": 1764006396.8822484,
+            "reward": 21.86284287630216,
+            "creation_time": 1764086077.7066305,
             "auxillary_file_paths": [
-                "results\\run5\\PoliceAgent\\PoliceAgent-1005534.pt"
+                "results\\run5\\PoliceAgent\\PoliceAgent-2021693.pt"
             ]
         }
     },

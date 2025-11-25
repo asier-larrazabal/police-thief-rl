@@ -88,7 +88,7 @@ namespace VehicleBehaviour {
         }
 
         // Max steering hangle, usualy higher for drift car
-        [Range(0f, 50.0f)]
+        [Range(0f, 60.0f)]
         [SerializeField] float steerAngle = 30.0f;
         public float SteerAngle { get => steerAngle;
             set => steerAngle = Mathf.Clamp(value, 0.0f, 50.0f);

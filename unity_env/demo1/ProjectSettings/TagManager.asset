@@ -8,6 +8,7 @@ TagManager:
   - Walls
   - Wall
   - Terrain
+  - Runner
   layers:
   - Default
   - TransparentFX

@@ -14,10 +14,7 @@ public class PoliceAgent : Agent
     private Quaternion initialRotation;
 
     private float prevDistanceToRunner;
-    private int stuckCounter = 0;
     private bool hasCollided = false;
-    private int collisionPenaltyCooldown = 0;
-    private const int collisionPenaltyCooldownDuration = 50;
 
     public override void Initialize()
     {
@@ -46,8 +43,6 @@ public class PoliceAgent : Agent
             wheelVehicle.Steering = 0f;
             wheelVehicle.Throttle = 0f;
         }
-
-        stuckCounter = 0;
 
         if (runnerAgent != null)
         {
@@ -111,21 +106,8 @@ public class PoliceAgent : Agent
 
     AddReward(-0.001f);
 
-    if (rb.linearVelocity.magnitude < 0.1f)
-    {
-        stuckCounter++;
-        if (stuckCounter > 30)
-        {
-            AddReward(-0.5f);
-            stuckCounter = 0;
-        }
-    }
-    else
-    {
-        stuckCounter = 0;
-    }
 
-    if (dist < 6.5f)
+    /*if (dist < 6.5f)
     {
         AddReward(100f);
         runnerAgent.AddReward(-100f);
@@ -133,22 +115,13 @@ public class PoliceAgent : Agent
         runnerAgent.EndEpisode();
         Debug.Log("¡Runner capturado!");
         return;
-    }
+    }*/
 
     // Aquí chequea colisión sin terminar episodio, solo penaliza
     if (hasCollided)
     {
-        if (collisionPenaltyCooldown == 0)
-        {
-            AddReward(-5f);  // penalización por choque
-            collisionPenaltyCooldown = collisionPenaltyCooldownDuration;
-            Debug.Log("Policía se ha chocado - penalización aplicada");
-        }
-    }
-
-    if (collisionPenaltyCooldown > 0)
-    {
-        collisionPenaltyCooldown--;
+        EndEpisode();
+        runnerAgent.EndEpisode();
     }
 }
 
@@ -158,6 +131,14 @@ public class PoliceAgent : Agent
         if (collision.gameObject.CompareTag("Wall") || collision.gameObject.CompareTag("Walls"))
         {
             hasCollided = true;
+        }
+        if (collision.gameObject.CompareTag("Runner"))
+        {
+            AddReward(100f);
+            runnerAgent.AddReward(-100f);
+            EndEpisode();
+            runnerAgent.EndEpisode();
+            Debug.Log("¡Runner capturado por colisión!");
         }
     }
 
@@ -170,6 +151,7 @@ public class PoliceAgent : Agent
     }
 
 
+
     public void OnRunnerReachedGoal()
     {
         AddReward(-20f);
@@ -178,7 +160,6 @@ public class PoliceAgent : Agent
 
     public void OnRunnerCollided()
     {
-        AddReward(-10f); // Penalización al policía por que el runner se choque
         EndEpisode();
     }
 
