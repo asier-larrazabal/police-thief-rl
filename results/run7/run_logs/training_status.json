@@ -1,0 +1,65 @@
+{
+    "PoliceAgent": {
+        "checkpoints": [
+            {
+                "steps": 355389,
+                "file_path": "results\\run7\\PoliceAgent\\PoliceAgent-355389.onnx",
+                "reward": -0.8476797142583463,
+                "creation_time": 1764603880.6442852,
+                "auxillary_file_paths": [
+                    "results\\run7\\PoliceAgent\\PoliceAgent-355389.pt"
+                ]
+            },
+            {
+                "steps": 499986,
+                "file_path": "results\\run7\\PoliceAgent\\PoliceAgent-499986.onnx",
+                "reward": 0.9727091926726557,
+                "creation_time": 1764604584.126864,
+                "auxillary_file_paths": [
+                    "results\\run7\\PoliceAgent\\PoliceAgent-499986.pt"
+                ]
+            },
+            {
+                "steps": 612832,
+                "file_path": "results\\run7\\PoliceAgent\\PoliceAgent-612832.onnx",
+                "reward": 7.289116777231296,
+                "creation_time": 1764605122.1619072,
+                "auxillary_file_paths": [
+                    "results\\run7\\PoliceAgent\\PoliceAgent-612832.pt"
+                ]
+            },
+            {
+                "steps": 999988,
+                "file_path": "results\\run7\\PoliceAgent\\PoliceAgent-999988.onnx",
+                "reward": 25.570638897414838,
+                "creation_time": 1764607063.9528763,
+                "auxillary_file_paths": [
+                    "results\\run7\\PoliceAgent\\PoliceAgent-999988.pt"
+                ]
+            },
+            {
+                "steps": 1357107,
+                "file_path": "results\\run7\\PoliceAgent\\PoliceAgent-1357107.onnx",
+                "reward": 35.27550452964943,
+                "creation_time": 1764608729.944252,
+                "auxillary_file_paths": [
+                    "results\\run7\\PoliceAgent\\PoliceAgent-1357107.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 1357107,
+            "file_path": "results\\run7\\PoliceAgent.onnx",
+            "reward": 35.27550452964943,
+            "creation_time": 1764608729.944252,
+            "auxillary_file_paths": [
+                "results\\run7\\PoliceAgent\\PoliceAgent-1357107.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.1.0",
+        "torch_version": "1.13.1+cpu"
+    }
+}
