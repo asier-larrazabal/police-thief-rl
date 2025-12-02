@@ -14,6 +14,7 @@ public class PoliceAgent : Agent
     private Quaternion initialRotation;
 
     private float prevDistanceToRunner;
+    private float bestDistanceToRunner;
     private bool hasCollided = false;
 
     public override void Initialize()
@@ -47,6 +48,7 @@ public class PoliceAgent : Agent
         if (runnerAgent != null)
         {
             prevDistanceToRunner = Vector3.Distance(transform.position, runnerAgent.transform.position);
+            bestDistanceToRunner = prevDistanceToRunner;  // Inicializa con la primera distancia
         }
     }
 
@@ -99,11 +101,15 @@ public class PoliceAgent : Agent
     }
 
     float dist = Vector3.Distance(transform.position, runnerAgent.transform.position);
-    float delta = prevDistanceToRunner - dist;
 
-    AddReward(delta * 0.1f);
-    prevDistanceToRunner = dist;
-
+    // Recompensa solo si la distancia actual es menor que la mejor distancia alcanzada
+    if (dist < bestDistanceToRunner)
+    {
+        float reward = (bestDistanceToRunner - dist) * 0.1f;
+        Debug.Log($"Recompensa por acercarse al runner: {reward}");
+        AddReward(reward);
+        bestDistanceToRunner = dist;  // Actualiza el mejor récord
+    }
     AddReward(-0.001f);
 
 
@@ -120,6 +126,7 @@ public class PoliceAgent : Agent
     // Aquí chequea colisión sin terminar episodio, solo penaliza
     if (hasCollided)
     {
+        AddReward(-3f);
         EndEpisode();
         runnerAgent.EndEpisode();
     }
