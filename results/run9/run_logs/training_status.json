@@ -1,0 +1,56 @@
+{
+    "PoliceAgent": {
+        "checkpoints": [
+            {
+                "steps": 499927,
+                "file_path": "results\\run9\\PoliceAgent\\PoliceAgent-499927.onnx",
+                "reward": 30.890967305004597,
+                "creation_time": 1766928215.9876642,
+                "auxillary_file_paths": [
+                    "results\\run9\\PoliceAgent\\PoliceAgent-499927.pt"
+                ]
+            },
+            {
+                "steps": 782150,
+                "file_path": "results\\run9\\PoliceAgent\\PoliceAgent-782150.onnx",
+                "reward": null,
+                "creation_time": 1766929200.3631074,
+                "auxillary_file_paths": [
+                    "results\\run9\\PoliceAgent\\PoliceAgent-782150.pt"
+                ]
+            },
+            {
+                "steps": 999939,
+                "file_path": "results\\run9\\PoliceAgent\\PoliceAgent-999939.onnx",
+                "reward": 56.86319395303726,
+                "creation_time": 1766942431.4039602,
+                "auxillary_file_paths": [
+                    "results\\run9\\PoliceAgent\\PoliceAgent-999939.pt"
+                ]
+            },
+            {
+                "steps": 1161262,
+                "file_path": "results\\run9\\PoliceAgent\\PoliceAgent-1161262.onnx",
+                "reward": 44.33456908199522,
+                "creation_time": 1766943052.1072493,
+                "auxillary_file_paths": [
+                    "results\\run9\\PoliceAgent\\PoliceAgent-1161262.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 1161262,
+            "file_path": "results\\run9\\PoliceAgent.onnx",
+            "reward": 44.33456908199522,
+            "creation_time": 1766943052.1072493,
+            "auxillary_file_paths": [
+                "results\\run9\\PoliceAgent\\PoliceAgent-1161262.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.1.0",
+        "torch_version": "1.13.1+cpu"
+    }
+}

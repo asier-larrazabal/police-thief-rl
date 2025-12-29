@@ -14,6 +14,9 @@ public class RunnerAgent : Agent
     private Vector3 initialPosition;
     private Quaternion initialRotation;
 
+    [Header("Curriculum Learning")]
+    [SerializeField] private float difficultyLevel = 3f; // 0 = estático, 1 = lento, 2 = medio, 3 = completo
+    private float speedMultiplier = 0f; // Multiplicador de velocidad según nivel
 
     [Header("Objetivo y configuración de entrenamiento")]
     [SerializeField] private Vector3[] targetPositions;
@@ -46,6 +49,40 @@ public class RunnerAgent : Agent
         initialRotation = transform.localRotation;
         if (wheelVehicle != null)
             wheelVehicle.IsPlayer = false;
+        
+        // Por defecto nivel 3 (para inferencia). El curriculum lo sobrescribirá durante training
+        difficultyLevel = 3f;
+        UpdateSpeedMultiplier();
+        Debug.Log($"Runner initialized at difficulty: {difficultyLevel}, speed multiplier: {speedMultiplier}");
+    }
+
+    // Método público para que el policía actualice el nivel de dificultad
+    public void SetDifficultyLevel(float level)
+    {
+        difficultyLevel = Mathf.Clamp(level, 0f, 3f);
+        UpdateSpeedMultiplier();
+        Debug.Log($"Runner difficulty level changed to: {difficultyLevel}, speed multiplier: {speedMultiplier}");
+    }
+
+    private void UpdateSpeedMultiplier()
+    {
+        // Nivel 0: estático (no se mueve)
+        // Nivel 1: 30% velocidad
+        // Nivel 2: 60% velocidad
+        // Nivel 3: 100% velocidad (completo)
+        if (difficultyLevel < 0.5f)
+            speedMultiplier = 0f;
+        else if (difficultyLevel < 1.5f)
+            speedMultiplier = 0.3f;
+        else if (difficultyLevel < 2.5f)
+            speedMultiplier = 0.6f;
+        else
+            speedMultiplier = 1.0f;
+    }
+
+    public float GetDifficultyLevel()
+    {
+        return difficultyLevel;
     }
 
 
@@ -117,9 +154,17 @@ public class RunnerAgent : Agent
 
     public override void OnActionReceived(ActionBuffers actions)
     {
+        // Aplicar multiplicador de velocidad según nivel de dificultad
+        if (speedMultiplier < 0.01f)
+        {
+            // Nivel 0: Runner estático
+            wheelVehicle.Steering = 0f;
+            wheelVehicle.Throttle = 0f;
+            return;
+        }
+
         int steeringAction = actions.DiscreteActions[0];
         int throttleAction = actions.DiscreteActions[1];
-
 
         float steeringAngle = 0f;
         switch (steeringAction)
@@ -129,8 +174,7 @@ public class RunnerAgent : Agent
             case 2: steeringAngle = maxSteeringAngle; break;
         }
         float steeringNormalized = Mathf.Clamp(steeringAngle / maxSteeringAngle, -1f, 1f);
-        wheelVehicle.Steering = steeringNormalized;
-
+        wheelVehicle.Steering = steeringNormalized * speedMultiplier;
 
         float throttle = 0f;
         switch (throttleAction)
@@ -139,7 +183,7 @@ public class RunnerAgent : Agent
             case 1: throttle = 0f; break;
             case 2: throttle = 1f; break;
         }
-        wheelVehicle.Throttle = throttle;
+        wheelVehicle.Throttle = throttle * speedMultiplier;
 
 
         // Penalización pequeña por paso (premia avanzar y penaliza quedarse parado mucho tiempo)
@@ -292,6 +336,31 @@ public class RunnerAgent : Agent
     {
         return rb != null ? rb.linearVelocity : Vector3.zero;
     }
+
+    public float GetDistanceToCurrentGoal()
+    {
+        if (targetTransform != null)
+            return Vector3.Distance(transform.position, targetTransform.position);
+        return 100f;
+    }
+
+    public Vector3 GetCurrentGoalPosition()
+    {
+        if (targetTransform != null)
+            return targetTransform.position;
+        return transform.position;
+    }
+
+    public Vector3 GetDirectionToGoal()
+    {
+        if (targetTransform != null)
+        {
+            Vector3 dirToGoal = (targetTransform.position - transform.position).normalized;
+            return dirToGoal;
+        }
+        return Vector3.zero;
+    }
+
     public void NotifyPoliceRunnerReachedGoal()
     {
         if (policeAgent != null)
