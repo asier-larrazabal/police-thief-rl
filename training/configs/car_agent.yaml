@@ -51,7 +51,7 @@ behaviors:
     # TRANSFER LEARNING: Initialize from runner's trained model
     # Runner already learned driving mechanics (steering, throttle control, navigation)
     # Police just needs to learn to chase runner instead of waypoint
-    init_path: results/run4/RunnerAgent/checkpoint.pt
+    init_path: results/run13/PoliceAgent/PoliceAgent-681669.pt
 
 env_settings:
   env_path: null

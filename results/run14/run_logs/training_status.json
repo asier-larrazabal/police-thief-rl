@@ -1,0 +1,38 @@
+{
+    "PoliceAgent": {
+        "checkpoints": [
+            {
+                "steps": 499897,
+                "file_path": "results\\run14\\PoliceAgent\\PoliceAgent-499897.onnx",
+                "reward": 16.739532793475384,
+                "creation_time": 1767041024.4945488,
+                "auxillary_file_paths": [
+                    "results\\run14\\PoliceAgent\\PoliceAgent-499897.pt"
+                ]
+            },
+            {
+                "steps": 511809,
+                "file_path": "results\\run14\\PoliceAgent\\PoliceAgent-511809.onnx",
+                "reward": 28.53498784515678,
+                "creation_time": 1767041069.352906,
+                "auxillary_file_paths": [
+                    "results\\run14\\PoliceAgent\\PoliceAgent-511809.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 511809,
+            "file_path": "results\\run14\\PoliceAgent.onnx",
+            "reward": 28.53498784515678,
+            "creation_time": 1767041069.352906,
+            "auxillary_file_paths": [
+                "results\\run14\\PoliceAgent\\PoliceAgent-511809.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.1.0",
+        "torch_version": "1.13.1+cpu"
+    }
+}

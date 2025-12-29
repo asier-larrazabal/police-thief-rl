@@ -17,6 +17,18 @@ public class PoliceAgent : Agent
     private float bestDistanceToRunner;
     private bool hasCollided = false;
 
+    [Header("Shaping y velocidad (Opción B)")]
+    [SerializeField] private float maxSpeed = 25f;              // Velocidad para normalizar (m/s)
+    [SerializeField] private float timePenalty = -0.001f;       // Penalización por step
+    [SerializeField] private float distanceCoeff = 0.05f;       // Factor delta-distancia
+    [SerializeField] private float maxDeltaClamp = 0.2f;        // Clamp del delta-distancia
+    [SerializeField] private float farDistance = 30f;           // Umbral "lejos" del runner
+    [SerializeField] private float nearDistance = 6f;           // Umbral "cerca" del runner
+    [SerializeField] private float speedCoeffFar = 0.001f;      // Recompensa por ir rápido si está lejos
+    [SerializeField] private float speedCoeffNear = 0.001f;     // Penalización por ir rápido si está cerca
+    [SerializeField] private float goalThreshold = 4f;          // Distancia para considerar que el runner llegó a su objetivo
+    [SerializeField] private float escapePenalty = -50f;        // Penalización cuando runner llega a su objetivo
+
     [Header("Curriculum Learning")]
     private float currentDifficultyLevel = 0f;
     private int successfulCatches = 0;
@@ -158,10 +170,13 @@ public class PoliceAgent : Agent
             return;
         }
 
-        // RECOMPENSAS SIMPLES
+        // RECOMPENSAS SIMPLIFICADAS (Opción B): mantener lo que funcionaba en run13, añadir presión de tiempo y escape
         float dist = Vector3.Distance(transform.position, runnerAgent.transform.position);
 
-        // 1. Recompensa por acercarse (solo si mejora el récord)
+        // 0) Penalización por tiempo (presiona para terminar episodio más rápido)
+        AddReward(timePenalty);
+
+        // 1) Recompensa por acercarse (mejor del anterior)
         if (dist < bestDistanceToRunner)
         {
             float reward = (bestDistanceToRunner - dist) * 0.5f;
@@ -169,7 +184,7 @@ public class PoliceAgent : Agent
             bestDistanceToRunner = dist;
         }
 
-        // 2. Pequeña recompensa por ir rápido HACIA el runner
+        // 2) Pequeña recompensa por ir rápido HACIA el runner
         Vector3 toRunner = (runnerAgent.transform.position - transform.position).normalized;
         float velocityTowardsRunner = Vector3.Dot(rb.linearVelocity.normalized, toRunner);
         if (velocityTowardsRunner > 0)
@@ -177,7 +192,7 @@ public class PoliceAgent : Agent
             AddReward(velocityTowardsRunner * 0.01f);
         }
 
-        // 3. Captura exitosa
+        // 3) Captura exitosa
         if (dist < 6.5f)
         {
             AddReward(50f);
@@ -191,9 +206,24 @@ public class PoliceAgent : Agent
             return;
         }
 
+        // 4) Runner llegó a su objetivo (escape) -> terminar episodio del policía con penalización suave
+        if (runnerAgent != null)
+        {
+            float distToGoal = runnerAgent.GetDistanceToCurrentGoal();
+            if (distToGoal <= goalThreshold && goalThreshold > 0f)
+            {
+                // Penalización suave por escape, no domina el aprendizaje
+                AddReward(escapePenalty);
+                EndEpisode();
+                runnerAgent.EndEpisode();
+                Debug.Log("Runner alcanzó su objetivo: fin de episodio para policía (escape)");
+                return;
+            }
+        }
+
         prevDistanceToRunner = dist;
 
-        // 4. Penalización por colisión con pared
+        // 5) Penalización por colisión con pared
         if (hasCollided)
         {
             AddReward(-5f);
