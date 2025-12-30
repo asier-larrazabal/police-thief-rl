@@ -1,0 +1,52 @@
+{
+    "PoliceAgent": {
+        "elo": 309.0253285985406,
+        "checkpoints": [
+            {
+                "steps": 407120,
+                "file_path": "results\\run17\\PoliceAgent\\PoliceAgent-407120.onnx",
+                "reward": 57.43064713010601,
+                "creation_time": 1767133176.8336306,
+                "auxillary_file_paths": [
+                    "results\\run17\\PoliceAgent\\PoliceAgent-407120.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 407120,
+            "file_path": "results\\run17\\PoliceAgent.onnx",
+            "reward": 57.43064713010601,
+            "creation_time": 1767133176.8336306,
+            "auxillary_file_paths": [
+                "results\\run17\\PoliceAgent\\PoliceAgent-407120.pt"
+            ]
+        }
+    },
+    "RunnerAgent": {
+        "checkpoints": [
+            {
+                "steps": 407120,
+                "file_path": "results\\run17\\RunnerAgent\\RunnerAgent-407120.onnx",
+                "reward": 3.4130178641960414,
+                "creation_time": 1767133176.7521956,
+                "auxillary_file_paths": [
+                    "results\\run17\\RunnerAgent\\RunnerAgent-407120.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 407120,
+            "file_path": "results\\run17\\RunnerAgent.onnx",
+            "reward": 3.4130178641960414,
+            "creation_time": 1767133176.7521956,
+            "auxillary_file_paths": [
+                "results\\run17\\RunnerAgent\\RunnerAgent-407120.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.1.0",
+        "torch_version": "1.13.1+cpu"
+    }
+}
