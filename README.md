@@ -1,27 +1,27 @@
-## Police–Thief Reinforcement Learning (Unity ML-Agents)
+## Police–Thief Reinforcement Learning (Unity ML-Agents) 🚓🏃‍♂️
 
 This project trains two driving agents in Unity using ML-Agents: a Runner that navigates toward targets and a Police agent that chases the Runner. It supports transfer learning to initialize the Police with the Runner's driving skills for faster convergence.
 
 ---
 
-**Verified Versions**
+**Verified Versions** ✅
 
 - Unity: 6000.0.41f1
 - Python: 3.10.9
 
 ---
 
-**Key Features**
+**Key Features** 🌟
 
-- Two behaviors: RunnerAgent (navigation) and PoliceAgent (pursuit)
-- Discrete actions: steering and throttle (3×3 = 9 actions)
-- Stacked vector observations (4 frames)
-- Transfer learning from Runner → Police for faster training
-- Ready-to-train with Unity Editor or a Windows build
+- Two behaviors: RunnerAgent (navigation) and PoliceAgent (pursuit) 🚦
+- Discrete actions: steering and throttle (3×3 = 9 actions) 🎮
+- Stacked vector observations (4 frames) 🖼️
+- Transfer learning from Runner → Police for faster training 🔁
+- Ready-to-train with Unity Editor or a Windows build 🏗️
 
 ---
 
-**Repository Structure**
+**Repository Structure** 🗂️
 
 - training/configs/car_agent.yaml: ML-Agents training configuration
 - unity_env/Police-Thief-RL: Unity project (agents, scenes, models)
@@ -35,7 +35,7 @@ See also: docs/transfer_learning_setup.md and docs/observation_space_comparison.
 
 ---
 
-**Requirements**
+**Requirements** 🛠️
 
 - Windows with PowerShell
 - Unity Editor 6000.0.41f1 (or compatible)
@@ -45,7 +45,7 @@ See also: docs/transfer_learning_setup.md and docs/observation_space_comparison.
 
 **Setup**
 
-1) Create and activate a virtual environment
+1) Create and activate a virtual environment 🧪
 
 ```powershell
 python -m venv .venv_ml
@@ -58,7 +58,7 @@ If running on locked-down machines, allow scripts for this session:
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 ```
 
-2) Install dependencies (known-good pins shown; `requirements.txt` is also provided)
+2) Install dependencies (known-good pins shown; `requirements.txt` is also provided) 📦
 
 ```powershell
 pip install --upgrade pip
@@ -70,24 +70,24 @@ pip install onnx==1.15.0 protobuf==3.20.3 numpy
 
 ---
 
-**How To Train**
+**How To Train** 🏋️
 
 You can train from the Unity Editor or using the prebuilt executable under build/.
 
-Option A — Unity Editor
+Option A — Unity Editor 🎨
 
 ```powershell
 mlagents-learn training\configs\car_agent.yaml --run-id run_editor --train
 # Then press Play in the Unity Editor for the scene with agents
 ```
 
-Option B — Windows Build (headless friendly)
+Option B — Windows Build (headless friendly) 🪟
 
 ```powershell
 mlagents-learn training/configs/car_agent.yaml --run-id run_build --train --no-graphics --env ".\build\My project.exe"
 ```
 
-Resuming a run
+Resuming a run 🔄
 
 ```powershell
 mlagents-learn training/configs/car_agent.yaml --run-id run_build --resume --no-graphics --env ".\build\My project.exe"
@@ -97,7 +97,7 @@ Outputs are written to results/<run-id>.
 
 ---
 
-**Transfer Learning (Runner → Police)**
+**Transfer Learning (Runner → Police)** 🚀
 
 The Police can start from the Runner's trained weights to accelerate training. Summary:
 
@@ -118,7 +118,7 @@ Full details, rationale, and troubleshooting: docs/transfer_learning_setup.md an
 
 ---
 
-**Monitoring with TensorBoard**
+**Monitoring with TensorBoard** 📊
 
 ```powershell
 pip install tensorboard
@@ -129,17 +129,17 @@ Key metrics to watch: Cumulative Reward, Episode Length, DifficultyLevel (if usi
 
 ---
 
-**Results and Models**
+**Results and Models** 🏁
 
-- Checkpoints and logs are under results/<run-id>/
-- Behavior-specific folders contain saved models, e.g., results/run12/PoliceAgent/
-- For deployment in Unity, use the .onnx exported model in the Unity project’s Models folder
+- Checkpoints and logs are under results/<run-id>/ 🗄️
+- Behavior-specific folders contain saved models, e.g., results/run12/PoliceAgent/ 🧠
+- For deployment in Unity, use the .onnx exported model in the Unity project’s Models folder 🚚
 
 Note: Current helper scripts under scripts/ are placeholders; training/export is handled by ML-Agents.
 
 ---
 
-**Troubleshooting**
+**Troubleshooting** 🛟
 
 - Observation mismatch (e.g., expected 68, got 76/92): Rebuild the Unity scene with VectorObservationSize = 17 and ensure 4-frame stacking; delete old builds if needed
 - Training won’t start: Verify `init_path` exists, scene has correct observation size, and the correct behavior names are present
