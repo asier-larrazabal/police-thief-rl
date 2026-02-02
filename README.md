@@ -2,6 +2,17 @@
 
 This project trains two driving agents in Unity using ML-Agents: a Runner that navigates toward targets and a Police agent that chases the Runner. It supports transfer learning to initialize the Police with the Runner's driving skills for faster convergence.
 
+
+
+
+https://github.com/user-attachments/assets/f2b1f6a3-ec64-4aa0-af1d-efd99411f857
+
+[Ver en YouTube](https://www.youtube.com/watch?v=BIru3di3A0A)
+
+
+
+
+
 ---
 
 **Verified Versions** ✅
